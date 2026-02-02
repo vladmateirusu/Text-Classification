@@ -7,6 +7,8 @@ from nltk.stem import PorterStemmer, WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import accuracy_score, log_loss
 from scipy.stats import entropy
+from sklearn.pipeline import Pipeline
+from nltk.corpus import stopwords
 
 class TextPreprocessor:
     def __init__(self, strategy):
@@ -26,6 +28,10 @@ class TextPreprocessor:
         elif self.strategy == 'lemma':
             tokens = word_tokenize(text.lower())
             return ' '.join([self.lemmatizer.lemmatize(token) for token in tokens])
+        elif self.strategy == 'remove_stopwords':
+            stop_words = set(stopwords.words('english'))
+            tokens = word_tokenize(text.lower())
+            return ' '.join([t for t in tokens if t.lower() not in stop_words])
         
         return text
     
@@ -44,11 +50,11 @@ def load_data(file0, file1):
     return np.array(X), np.array(Y)
 
 def experiment_sentiment(f):
-    X, Y = load_data('synsem0_file.txt', 'synsem1_file.txt')
+    X, Y = load_data('synsem0.txt', 'synsem1.txt')
 
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size=0.2, random_state=42)
 
-    preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma']
+    preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma', 'remove_stopwords']
     
     feature_extractors = {
         'tfidf_100': TfidfVectorizer(max_features=100),
@@ -58,7 +64,6 @@ def experiment_sentiment(f):
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
         'word_100_binary': CountVectorizer(max_features=100, binary=True),
         'word_100_stop': CountVectorizer(max_features=100, stop_words='english'),
-        'word_100_min1': CountVectorizer(max_features=100, min_df=1),
         'word_100_min2': CountVectorizer(max_features=100, min_df=2),
         'word_100_min3': CountVectorizer(max_features=100, min_df=3),
         'char_3_5_200': CountVectorizer( analyzer='char', ngram_range=(3, 5), max_features=200 )
@@ -96,22 +101,37 @@ def experiment_sentiment(f):
         
         for feat_name, vectorizer in feature_extractors.items():
 
-            X_train_vec = vectorizer.fit_transform(X_train_prep)
-            X_test_vec = vectorizer.transform(X_test_prep)
-            
             for clf_name, classifier in classifiers.items():
 
-                classifier.fit(X_train_vec, Y_train)
-                
-                train_acc = accuracy_score(Y_train, classifier.predict(X_train_vec))
-                test_acc = accuracy_score(Y_test, classifier.predict(X_test_vec))
-                
-                cv_scores = cross_val_score(classifier, X_train_vec, Y_train, cv=5)
+                #Pipeline prevents feature leakage
+                pipeline = Pipeline([
+                    ('vectorizer', vectorizer),
+                    ('classifier', classifier)
+                ])
+
+                # Coss val
+                cv_scores = cross_val_score(
+                    pipeline,
+                    X_train_prep,
+                    Y_train,
+                    cv=5
+                )
                 cv_mean = cv_scores.mean()
                 cv_std = cv_scores.std()
 
-                if hasattr(classifier, "predict_proba"):
-                    test_probs = classifier.predict_proba(X_test_vec)
+                # train
+                pipeline.fit(X_train_prep, Y_train)
+
+                # accuracy
+                train_preds = pipeline.predict(X_train_prep)
+                test_preds = pipeline.predict(X_test_prep)
+
+                train_acc = accuracy_score(Y_train, train_preds)
+                test_acc = accuracy_score(Y_test, test_preds)
+
+                # log loss and entropy
+                if hasattr(pipeline.named_steps['classifier'], "predict_proba"):
+                    test_probs = pipeline.predict_proba(X_test_prep)
                     test_logloss = log_loss(Y_test, test_probs)
                     pred_entropies = [entropy(prob) for prob in test_probs]
                     mean_entropy = np.mean(pred_entropies)
@@ -155,13 +175,13 @@ def experiment_sentiment(f):
 
 def experiment_morphphon(f):
     
-    X, Y = load_data('morphphon0_file.txt', 'morphphon1_file.txt')
+    X, Y = load_data('morphphon0.txt', 'morphphon1.txt')
     
     X_train, X_test, Y_train, Y_test = train_test_split(
         X, Y, test_size=0.2, random_state=42, stratify=Y
     )
     
-    preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma']
+    preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma', 'remove_stopwords']
     
     feature_extractors = {
         'tfidf_100': TfidfVectorizer(max_features=100),
@@ -171,7 +191,6 @@ def experiment_morphphon(f):
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
         'word_100_binary': CountVectorizer(max_features=100, binary=True),
         'word_100_stop': CountVectorizer(max_features=100, stop_words='english'),
-        'word_100_min1': CountVectorizer(max_features=100, min_df=1),
         'word_100_min2': CountVectorizer(max_features=100, min_df=2),
         'word_100_min3': CountVectorizer(max_features=100, min_df=3),
         'char_3_5_200': CountVectorizer( analyzer='char', ngram_range=(3, 5), max_features=200 )
@@ -208,29 +227,45 @@ def experiment_morphphon(f):
         X_test_prep = [preprocessor.preprocess(x) for x in X_test]
         
         for feat_name, vectorizer in feature_extractors.items():
-      
-            X_train_vec = vectorizer.fit_transform(X_train_prep)
-            X_test_vec = vectorizer.transform(X_test_prep)
-            
+
             for clf_name, classifier in classifiers.items():
-    
-                classifier.fit(X_train_vec, Y_train)
-                
-                train_acc = accuracy_score(Y_train, classifier.predict(X_train_vec))
-                test_acc = accuracy_score(Y_test, classifier.predict(X_test_vec))
-                
-                cv_scores = cross_val_score(classifier, X_train_vec, Y_train, cv=5)
+
+                #Pipeline prevents feature leakage
+                pipeline = Pipeline([
+                    ('vectorizer', vectorizer),
+                    ('classifier', classifier)
+                ])
+
+                # Coss val
+                cv_scores = cross_val_score(
+                    pipeline,
+                    X_train_prep,
+                    Y_train,
+                    cv=5
+                )
                 cv_mean = cv_scores.mean()
                 cv_std = cv_scores.std()
-                
-                if hasattr(classifier, "predict_proba"):
-                    test_probs = classifier.predict_proba(X_test_vec)
+
+                # train
+                pipeline.fit(X_train_prep, Y_train)
+
+                # accuracy
+                train_preds = pipeline.predict(X_train_prep)
+                test_preds = pipeline.predict(X_test_prep)
+
+                train_acc = accuracy_score(Y_train, train_preds)
+                test_acc = accuracy_score(Y_test, test_preds)
+
+                # log loss and entropy
+                if hasattr(pipeline.named_steps['classifier'], "predict_proba"):
+                    test_probs = pipeline.predict_proba(X_test_prep)
                     test_logloss = log_loss(Y_test, test_probs)
                     pred_entropies = [entropy(prob) for prob in test_probs]
                     mean_entropy = np.mean(pred_entropies)
                 else:
                     test_logloss = None
                     mean_entropy = None
+
 
                 result = {
                     'preprocessing': prep_strategy,
