@@ -1,11 +1,12 @@
 import numpy as np
 import nltk
 from sklearn.linear_model import LogisticRegression, Perceptron
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics import accuracy_score
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics import accuracy_score, log_loss
+from scipy.stats import entropy
 
 class TextPreprocessor:
     def __init__(self, strategy):
@@ -47,16 +48,19 @@ def experiment_sentiment(f):
 
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size=0.2, random_state=42)
 
-    preprocessing_strategies = ['tokenize', 'lowercase', 'stem']
+    preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma']
     
     feature_extractors = {
+        'tfidf_100': TfidfVectorizer(max_features=100),
         'word_50': CountVectorizer(max_features=50),
         'word_100': CountVectorizer(max_features=100),
         'bigram_50': CountVectorizer(ngram_range=(1, 2), max_features=50),
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
         'word_100_binary': CountVectorizer(max_features=100, binary=True),
         'word_100_stop': CountVectorizer(max_features=100, stop_words='english'),
-        'word_100_min2': CountVectorizer( max_features=100, min_df=2, max_df=0.9 ),
+        'word_100_min1': CountVectorizer(max_features=100, min_df=1),
+        'word_100_min2': CountVectorizer(max_features=100, min_df=2),
+        'word_100_min3': CountVectorizer(max_features=100, min_df=3),
         'char_3_5_200': CountVectorizer( analyzer='char', ngram_range=(3, 5), max_features=200 )
     }
     classifiers = {
@@ -102,12 +106,30 @@ def experiment_sentiment(f):
                 train_acc = accuracy_score(Y_train, classifier.predict(X_train_vec))
                 test_acc = accuracy_score(Y_test, classifier.predict(X_test_vec))
                 
+                cv_scores = cross_val_score(classifier, X_train_vec, Y_train, cv=5)
+                cv_mean = cv_scores.mean()
+                cv_std = cv_scores.std()
+
+                if hasattr(classifier, "predict_proba"):
+                    test_probs = classifier.predict_proba(X_test_vec)
+                    test_logloss = log_loss(Y_test, test_probs)
+                    pred_entropies = [entropy(prob) for prob in test_probs]
+                    mean_entropy = np.mean(pred_entropies)
+                else:
+                    test_logloss = None
+                    mean_entropy = None
+
+
                 result = {
                     'preprocessing': prep_strategy,
                     'features': feat_name,
                     'classifier': clf_name,
                     'train_acc': train_acc,
-                    'test_acc': test_acc
+                    'test_acc': test_acc,
+                    'cv_mean': cv_mean,
+                    'cv_std': cv_std,
+                    'test_logloss': test_logloss,
+                    'mean_entropy': mean_entropy
                 }
                 results.append(result)
                 
@@ -115,19 +137,21 @@ def experiment_sentiment(f):
                 print(f"\nPreprocessing: {prep_strategy}")
                 print(f"Classifier: {clf_name}")
                 print(f"Features: {feat_name}")
-                print(f"Train Acc: {train_acc}")
-                print(f"Test Acc: {test_acc}")
+                print(f"Train Acc: {train_acc:.4f}")
+                print(f"Test Acc: {test_acc:.4f}")
+                print(f"CV Mean: {cv_mean:.4f} (+/- {cv_std:.4f})")
+                print(f"Test Log Loss: {test_logloss}")
+                print(f"Mean Entropy: {mean_entropy}")
                 print("\n")
                 
-                f.write(f"Preprocessing: {prep_strategy}\n")
-                f.write(f"Classifier: {clf_name}\n")
-                f.write(f"Features: {feat_name}\n")
-                f.write(f"Train Acc: {train_acc}\n")
-                f.write(f"Test Acc: {test_acc}\n\n")
-    
-    best_result = max(results, key=lambda x: x['test_acc'])
-    
-    return results, best_result
+    best_acc = max(results, key=lambda x: x['test_acc'])
+
+    best_logloss = min(
+        [r for r in results if r['test_logloss'] is not None],
+        key=lambda x: x['test_logloss']
+    )
+
+    return results, best_acc, best_logloss
 
 def experiment_morphphon(f):
     
@@ -137,16 +161,19 @@ def experiment_morphphon(f):
         X, Y, test_size=0.2, random_state=42, stratify=Y
     )
     
-    preprocessing_strategies = ['tokenize', 'lowercase', 'stem']
+    preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma']
     
     feature_extractors = {
+        'tfidf_100': TfidfVectorizer(max_features=100),
         'word_50': CountVectorizer(max_features=50),
         'word_100': CountVectorizer(max_features=100),
         'bigram_50': CountVectorizer(ngram_range=(1, 2), max_features=50),
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
         'word_100_binary': CountVectorizer(max_features=100, binary=True),
         'word_100_stop': CountVectorizer(max_features=100, stop_words='english'),
-        'word_100_min2': CountVectorizer( max_features=100, min_df=2, max_df=0.9 ),
+        'word_100_min1': CountVectorizer(max_features=100, min_df=1),
+        'word_100_min2': CountVectorizer(max_features=100, min_df=2),
+        'word_100_min3': CountVectorizer(max_features=100, min_df=3),
         'char_3_5_200': CountVectorizer( analyzer='char', ngram_range=(3, 5), max_features=200 )
     }
     classifiers = {
@@ -192,51 +219,91 @@ def experiment_morphphon(f):
                 train_acc = accuracy_score(Y_train, classifier.predict(X_train_vec))
                 test_acc = accuracy_score(Y_test, classifier.predict(X_test_vec))
                 
+                cv_scores = cross_val_score(classifier, X_train_vec, Y_train, cv=5)
+                cv_mean = cv_scores.mean()
+                cv_std = cv_scores.std()
+                
+                if hasattr(classifier, "predict_proba"):
+                    test_probs = classifier.predict_proba(X_test_vec)
+                    test_logloss = log_loss(Y_test, test_probs)
+                    pred_entropies = [entropy(prob) for prob in test_probs]
+                    mean_entropy = np.mean(pred_entropies)
+                else:
+                    test_logloss = None
+                    mean_entropy = None
+
                 result = {
                     'preprocessing': prep_strategy,
                     'features': feat_name,
                     'classifier': clf_name,
                     'train_acc': train_acc,
-                    'test_acc': test_acc
+                    'test_acc': test_acc,
+                    'cv_mean': cv_mean,
+                    'cv_std': cv_std,
+                    'test_logloss': test_logloss,
+                    'mean_entropy': mean_entropy
                 }
+
                 results.append(result)
 
                 print(f"\nPreprocessing: {prep_strategy}")
                 print(f"Classifier: {clf_name}")
                 print(f"Features: {feat_name}")
-                print(f"Train Acc: {train_acc}")
-                print(f"Test Acc: {test_acc}")
+                print(f"Train Acc: {train_acc:.4f}")
+                print(f"Test Acc: {test_acc:.4f}")
+                print(f"CV Mean: {cv_mean:.4f} (+/- {cv_std:.4f})")
+                print(f"Test Log Loss: {test_logloss}")
+                print(f"Mean Entropy: {mean_entropy}")
                 print("\n")
-                
-                f.write(f"Preprocessing: {prep_strategy}\n")
-                f.write(f"Classifier: {clf_name}\n")
-                f.write(f"Features: {feat_name}\n")
-                f.write(f"Train Acc: {train_acc}\n")
-                f.write(f"Test Acc: {test_acc}\n\n")
     
-    best_result = max(results, key=lambda x: x['test_acc'])
-    
-    return results, best_result
+    best_acc = max(results, key=lambda x: x['test_acc'])
+
+    best_logloss = min(
+     [r for r in results if r['test_logloss'] is not None],
+     key=lambda x: x['test_logloss']
+    )
+
+    return results, best_acc, best_logloss
+
 
 
 if __name__ == "__main__":
     with open('results.txt', 'w', encoding='utf-8') as f:
         f.write("Sentiment Analysis Results\n")
         f.write("=" * 50 + "\n\n")
-        results, best = experiment_sentiment(f)
+        results, best_acc, best_logloss = experiment_sentiment(f)
         f.write("\nBest config for Sentiment Analysis:\n")
-        f.write(f"  Preprocessing: {best['preprocessing']}\n")
-        f.write(f"  Features: {best['features']}\n")
-        f.write(f"  Classifier: {best['classifier']}\n")
-        f.write(f"  Test Accuracy: {best['test_acc']}\n\n")
+        f.write(f"  Preprocessing: {best_acc['preprocessing']}\n")
+        f.write(f"  Features: {best_acc['features']}\n")
+        f.write(f"  Classifier: {best_acc['classifier']}\n")
+        f.write(f"  Test Accuracy: {best_acc['test_acc']:.4f}\n")
+        f.write(f"  CV Mean: {best_acc['cv_mean']:.4f} (+/- {best_acc['cv_std']:.4f})\n")
+        f.write(f"  Mean Entropy: {best_acc['mean_entropy']}\n\n")
+
+        f.write(f"Best Log Loss: {best_logloss['test_logloss']:.4f}\n")  
+        f.write(f"  Preprocessing: {best_logloss['preprocessing']}\n")
+        f.write(f"  Features: {best_logloss['features']}\n")
+        f.write(f"  Classifier: {best_logloss['classifier']}\n")
+        f.write(f"  Test Accuracy: {best_logloss['test_acc']:.4f}\n")
+        f.write(f"  CV Mean: {best_logloss['cv_mean']:.4f} (+/- {best_logloss['cv_std']:.4f})\n")
+        f.write(f"  Mean Entropy: {best_logloss['mean_entropy']}\n\n") 
         
         f.write("Morphophonology Results\n")
         f.write("=" * 50 + "\n\n")
-        results_morphphon, best_morphphon = experiment_morphphon(f)
+        results_morphphon, best_morphphon, best_logloss_morphphon = experiment_morphphon(f)
         f.write("\nBest config for Morphophonology:\n")
+        f.write("\nBest test accuracy:\n")
         f.write(f"  Preprocessing: {best_morphphon['preprocessing']}\n")
         f.write(f"  Features: {best_morphphon['features']}\n")
         f.write(f"  Classifier: {best_morphphon['classifier']}\n")
-        f.write(f"  Test Accuracy: {best_morphphon['test_acc']}\n")
-    
-    print("Results have been written to results.txt")
+        f.write(f"  Test Accuracy: {best_morphphon['test_acc']:.4f}\n")
+        f.write(f"  CV Mean: {best_morphphon['cv_mean']:.4f} (+/- {best_morphphon['cv_std']:.4f})\n")
+        f.write(f"  Mean Entropy: {best_morphphon['mean_entropy']}\n\n")
+        
+        f.write(f"Best Log Loss: {best_logloss_morphphon['test_logloss']:.4f}\n")
+        f.write(f"  Preprocessing: {best_logloss_morphphon['preprocessing']}\n")
+        f.write(f"  Features: {best_logloss_morphphon['features']}\n")
+        f.write(f"  Classifier: {best_logloss_morphphon['classifier']}\n")
+        f.write(f"  Test Accuracy: {best_logloss_morphphon['test_acc']:.4f}\n")
+        f.write(f"  CV Mean: {best_logloss_morphphon['cv_mean']:.4f} (+/- {best_logloss_morphphon['cv_std']:.4f})\n")
+        f.write(f"  Mean Entropy: {best_logloss_morphphon['mean_entropy']}\n")
