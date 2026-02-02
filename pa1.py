@@ -52,7 +52,9 @@ def load_data(file0, file1):
 def experiment_sentiment(f):
     X, Y = load_data('synsem0.txt', 'synsem1.txt')
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size=0.2, random_state=42)
+    X_train, X_test, Y_train, Y_test = train_test_split(
+        X,Y, test_size=0.2, random_state=42, stratify=Y
+        )
 
     preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma', 'remove_stopwords']
     
@@ -307,38 +309,57 @@ if __name__ == "__main__":
         f.write("Sentiment Analysis Results\n")
         f.write("=" * 50 + "\n\n")
         results, best_acc, best_logloss = experiment_sentiment(f)
-        f.write("\nBest config for Sentiment Analysis:\n")
+        f.write("\nBest test accuracy for Sentiment Analysis:\n")
         f.write(f"  Preprocessing: {best_acc['preprocessing']}\n")
         f.write(f"  Features: {best_acc['features']}\n")
         f.write(f"  Classifier: {best_acc['classifier']}\n")
-        f.write(f"  Test Accuracy: {best_acc['test_acc']:.4f}\n")
-        f.write(f"  CV Mean: {best_acc['cv_mean']:.4f} (+/- {best_acc['cv_std']:.4f})\n")
+        f.write(f"  Train Accuracy: {best_acc['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_acc['test_acc']}\n")
+        if best_acc['test_logloss'] is None:
+            f.write("  Test Log Loss: N/A\n")
+        else:
+            f.write(f"  Test Log Loss: {best_acc['test_logloss']}\n")
+        f.write(f"  CV Mean: {best_acc['cv_mean']} (+/- {best_acc['cv_std']})\n")
         f.write(f"  Mean Entropy: {best_acc['mean_entropy']}\n\n")
 
-        f.write(f"Best Log Loss: {best_logloss['test_logloss']:.4f}\n")  
+        f.write("\nBest test log loss for Sentiment Analysis:\n")
         f.write(f"  Preprocessing: {best_logloss['preprocessing']}\n")
         f.write(f"  Features: {best_logloss['features']}\n")
         f.write(f"  Classifier: {best_logloss['classifier']}\n")
-        f.write(f"  Test Accuracy: {best_logloss['test_acc']:.4f}\n")
-        f.write(f"  CV Mean: {best_logloss['cv_mean']:.4f} (+/- {best_logloss['cv_std']:.4f})\n")
-        f.write(f"  Mean Entropy: {best_logloss['mean_entropy']}\n\n") 
+        f.write(f"  Train Accuracy: {best_logloss['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_logloss['test_acc']}\n")
+        if best_logloss['test_logloss'] is None:
+            f.write("  Test Log Loss: N/A\n")
+        else:
+            f.write(f"  Test Log Loss: {best_logloss['test_logloss']}\n")
+        f.write(f"  CV Mean: {best_logloss['cv_mean']} (+/- {best_logloss['cv_std']})\n")
+        f.write(f"  Mean Entropy: {best_logloss['mean_entropy']}\n\n")
         
         f.write("Morphophonology Results\n")
         f.write("=" * 50 + "\n\n")
         results_morphphon, best_morphphon, best_logloss_morphphon = experiment_morphphon(f)
-        f.write("\nBest config for Morphophonology:\n")
-        f.write("\nBest test accuracy:\n")
+        f.write("\nBest test accuracy for Morphophonology Analysis:\n")
         f.write(f"  Preprocessing: {best_morphphon['preprocessing']}\n")
         f.write(f"  Features: {best_morphphon['features']}\n")
         f.write(f"  Classifier: {best_morphphon['classifier']}\n")
-        f.write(f"  Test Accuracy: {best_morphphon['test_acc']:.4f}\n")
-        f.write(f"  CV Mean: {best_morphphon['cv_mean']:.4f} (+/- {best_morphphon['cv_std']:.4f})\n")
+        f.write(f"  Train Accuracy: {best_morphphon['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_morphphon['test_acc']}\n")
+        if best_morphphon['test_logloss'] is None:
+            f.write("  Test Log Loss: N/A\n")
+        else:
+            f.write(f"  Test Log Loss: {best_morphphon['test_logloss']  }\n")
+        f.write(f"  CV Mean: {best_morphphon['cv_mean']} (+/- {best_morphphon['cv_std']})\n")
         f.write(f"  Mean Entropy: {best_morphphon['mean_entropy']}\n\n")
         
-        f.write(f"Best Log Loss: {best_logloss_morphphon['test_logloss']:.4f}\n")
+        f.write("\nBest test log loss for morpho Analysis:\n")
         f.write(f"  Preprocessing: {best_logloss_morphphon['preprocessing']}\n")
         f.write(f"  Features: {best_logloss_morphphon['features']}\n")
         f.write(f"  Classifier: {best_logloss_morphphon['classifier']}\n")
-        f.write(f"  Test Accuracy: {best_logloss_morphphon['test_acc']:.4f}\n")
-        f.write(f"  CV Mean: {best_logloss_morphphon['cv_mean']:.4f} (+/- {best_logloss_morphphon['cv_std']:.4f})\n")
-        f.write(f"  Mean Entropy: {best_logloss_morphphon['mean_entropy']}\n")
+        f.write(f"  Train Accuracy: {best_logloss_morphphon['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_logloss_morphphon['test_acc']}\n")
+        if best_logloss_morphphon['test_logloss'] is None:
+            f.write("  Test Log Loss: N/A\n")
+        else:
+            f.write(f"  Test Log Loss: {best_logloss_morphphon['test_logloss']}\n")
+        f.write(f"  CV Mean: {best_logloss_morphphon['cv_mean']} (+/- {best_logloss_morphphon['cv_std']})\n")
+        f.write(f"  Mean Entropy: {best_logloss_morphphon['mean_entropy']}\n\n")

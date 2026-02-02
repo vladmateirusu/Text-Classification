@@ -2,40 +2,49 @@ Sentiment Analysis Results
 ==================================================
 
 
-Best config for Sentiment Analysis:
-  Preprocessing: tokenize
-  Features: tfidf_100
-  Classifier: perceptron_ES
-  Test Accuracy: 0.6897
-  CV Mean: 0.5427 (+/- 0.0742)
+Best test accuracy for Sentiment Analysis:
+  Preprocessing: stem
+  Features: word_100_min3
+  Classifier: perceptron_L2_alpha1e-3
+  Train Accuracy: 0.7456140350877193
+  Test Accuracy: 0.6896551724137931
+  Test Log Loss: N/A
+  CV Mean: 0.4984189723320158 (+/- 0.1141765815369756)
   Mean Entropy: None
 
-Best Log Loss: 0.6422
-  Preprocessing: stem
+
+Best test log loss for Sentiment Analysis:
+  Preprocessing: lemma
   Features: word_100_stop
-  Classifier: logistic_L2_C10
-  Test Accuracy: 0.6207
-  CV Mean: 0.3759 (+/- 0.1093)
-  Mean Entropy: 0.5854096997270762
+  Classifier: logistic_L2_C1.0
+  Train Accuracy: 0.8421052631578947
+  Test Accuracy: 0.4827586206896552
+  Test Log Loss: 0.6623906653467632
+  CV Mean: 0.3513833992094862 (+/- 0.033407978828641015)
+  Mean Entropy: 0.6729416112379848
 
 Morphophonology Results
 ==================================================
 
 
-Best config for Morphophonology:
-
-Best test accuracy:
+Best test accuracy for Morphophonology Analysis:
   Preprocessing: tokenize
   Features: tfidf_100
   Classifier: logistic_L2_C10
-  Test Accuracy: 1.0000
-  CV Mean: 0.9549 (+/- 0.0407)
+  Train Accuracy: 1.0
+  Test Accuracy: 1.0
+  Test Log Loss: 0.17146547225330455
+  CV Mean: 0.9727272727272727 (+/- 0.03636363636363637)
   Mean Entropy: 0.3602189927436702
 
-Best Log Loss: 0.1714
+
+Best test log loss for morpho Analysis:
   Preprocessing: lemma
   Features: tfidf_100
   Classifier: logistic_L1_C10
-  Test Accuracy: 0.9655
-  CV Mean: 0.9285 (+/- 0.0463)
+  Train Accuracy: 1.0
+  Test Accuracy: 0.9655172413793104
+  Test Log Loss: 0.1713683960567758
+  CV Mean: 0.9280632411067196 (+/- 0.05494781993994317)
   Mean Entropy: 0.15009075544564085
+
