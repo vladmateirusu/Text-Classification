@@ -3,48 +3,50 @@ Sentiment Analysis Results
 
 
 Best test accuracy for Sentiment Analysis:
-  Preprocessing: stem
-  Features: word_100_min3
-  Classifier: perceptron_L2_alpha1e-3
-  Train Accuracy: 0.7456140350877193
-  Test Accuracy: 0.6896551724137931
+  Preprocessing: tokenize
+  Features: char_3_5_binary
+  Classifier: linearSVC_L1_C0.1
+  Train Accuracy: 0.7193
+  Test Accuracy: 0.6897
   Test Log Loss: N/A
-  CV Mean: 0.4984189723320158 (+/- 0.1141765815369756)
-  Mean Entropy: None
+  CV Mean: 0.4739 (+/- 0.0348)
+  Mean Entropy: N/A
 
 
 Best test log loss for Sentiment Analysis:
   Preprocessing: lemma
-  Features: word_100_stop
-  Classifier: logistic_L2_C1.0
-  Train Accuracy: 0.8421052631578947
-  Test Accuracy: 0.4827586206896552
-  Test Log Loss: 0.6623906653467632
-  CV Mean: 0.3513833992094862 (+/- 0.033407978828641015)
-  Mean Entropy: 0.6729416112379848
-
-Morphophonology Results
-==================================================
+  Features: char_3_5_binary
+  Classifier: logistic_L1_C1.0
+  Train Accuracy: 0.8772
+  Test Accuracy: 0.5862
+  Test Log Loss: 0.6572
+  CV Mean: 0.4652 (+/- 0.0668)
+  Mean Entropy: 0.5742
 
 
-Best test accuracy for Morphophonology Analysis:
+======================================================================
+Alliteration Detection Results (3+ words with same starting letter)
+======================================================================
+
+
+Best test accuracy for Alliteration Detection:
   Preprocessing: tokenize
   Features: tfidf_100
   Classifier: logistic_L2_C10
-  Train Accuracy: 1.0
-  Test Accuracy: 1.0
-  Test Log Loss: 0.17146547225330455
-  CV Mean: 0.9727272727272727 (+/- 0.03636363636363637)
-  Mean Entropy: 0.3602189927436702
+  Train Accuracy: 1.0000
+  Test Accuracy: 1.0000
+  Test Log Loss: 0.1715
+  CV Mean: 0.9727 (+/- 0.0364)
+  Mean Entropy: 0.3602
 
 
-Best test log loss for morpho Analysis:
+Best test log loss for Alliteration Detection:
   Preprocessing: lemma
   Features: tfidf_100
   Classifier: logistic_L1_C10
-  Train Accuracy: 1.0
-  Test Accuracy: 0.9655172413793104
-  Test Log Loss: 0.1713683960567758
-  CV Mean: 0.9280632411067196 (+/- 0.05494781993994317)
-  Mean Entropy: 0.15009075544564085
+  Train Accuracy: 1.0000
+  Test Accuracy: 0.9655
+  Test Log Loss: 0.1714
+  CV Mean: 0.9281 (+/- 0.0549)
+  Mean Entropy: 0.1501
 

@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score, log_loss
 from scipy.stats import entropy
 from sklearn.pipeline import Pipeline
 from nltk.corpus import stopwords
+from sklearn.svm import LinearSVC
 
 class TextPreprocessor:
     def __init__(self, strategy):
@@ -60,16 +61,12 @@ def experiment_sentiment(f):
     
     feature_extractors = {
         'tfidf_100': TfidfVectorizer(max_features=100),
-        'word_50': CountVectorizer(max_features=50),
         'word_100': CountVectorizer(max_features=100),
-        'bigram_50': CountVectorizer(ngram_range=(1, 2), max_features=50),
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
-        'word_100_binary': CountVectorizer(max_features=100, binary=True),
-        'word_100_stop': CountVectorizer(max_features=100, stop_words='english'),
-        'word_100_min2': CountVectorizer(max_features=100, min_df=2),
-        'word_100_min3': CountVectorizer(max_features=100, min_df=3),
-        'char_3_5_200': CountVectorizer( analyzer='char', ngram_range=(3, 5), max_features=200 )
-    }
+        'char_3_5_count': CountVectorizer(analyzer='char', ngram_range=(3, 5), max_features=200),
+        'char_3_5_binary': CountVectorizer(analyzer='char', ngram_range=(3, 5), binary=True, max_features=200),
+    } 
+
     classifiers = {
         'logistic_L2_C0.01': LogisticRegression(penalty='l2', C=0.01, max_iter=500, random_state=42),
         'logistic_L2_C0.1': LogisticRegression(penalty='l2', C=0.1, max_iter=500, random_state=42),
@@ -79,21 +76,20 @@ def experiment_sentiment(f):
         'logistic_L1_C0.10': LogisticRegression(penalty='l1', solver='liblinear', C=0.1, max_iter=500, random_state=42),
         'logistic_L1_C1.0': LogisticRegression(penalty='l1', solver='liblinear', C=1.0, max_iter=500, random_state=42),
         'logistic_L1_C10': LogisticRegression(penalty='l1', solver='liblinear', C=10.0, max_iter=500, random_state=42),
-        'perceptron_L2': Perceptron(penalty='l2', alpha=0.0001, max_iter=500, random_state=42),
-        'perceptron_L1': Perceptron(penalty='l1', alpha=0.0001, max_iter=500, random_state=42),
-        'perceptron_none': Perceptron(penalty=None, max_iter=500, random_state=42),
-        'perceptron_ES': Perceptron( penalty='l2', alpha=0.0001, max_iter=1000, early_stopping=True, validation_fraction=0.1, random_state=42 ),
-        'perceptron_eta0_0.01': Perceptron( eta0=0.01, max_iter=100, random_state=42 ),
-        'perceptron_eta0_0.1': Perceptron( eta0=0.1, max_iter=100, random_state=42 ),
-        'perceptron_eta0_1.0': Perceptron( eta0=1.0, max_iter=100, random_state=42 ),
-        'perceptron_iter_10': Perceptron( max_iter=10, random_state=42 ),
-        'perceptron_iter_50': Perceptron( max_iter=50, random_state=42 ),
-        'perceptron_iter_500': Perceptron( max_iter=500, random_state=42 ),
-        'perceptron_L2_alpha1e-5': Perceptron( penalty='l2', alpha=1e-5, max_iter=100, random_state=42 ),
-        'perceptron_L2_alpha1e-3': Perceptron( penalty='l2', alpha=1e-3, max_iter=100, random_state=42 ),
+        
+        'linearSVC_L2_C0.01': LinearSVC(penalty='l2', C=0.01, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C0.1': LinearSVC(penalty='l2', C=0.1, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C1.0': LinearSVC(penalty='l2', C=1.0, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C10': LinearSVC(penalty='l2', C=10.0, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C100': LinearSVC(penalty='l2', C=100.0, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L1_C0.01': LinearSVC(penalty='l1', C=0.01, max_iter=1000, random_state=42, dual=False),
+        'linearSVC_L1_C0.1': LinearSVC(penalty='l1', C=0.1, max_iter=1000, random_state=42, dual=False),
+        'linearSVC_L1_C1.0': LinearSVC(penalty='l1', C=1.0, max_iter=1000, random_state=42, dual=False),
+        'linearSVC_L1_C10': LinearSVC(penalty='l1', C=10.0, max_iter=1000, random_state=42, dual=False),
     }
     
     results = []
+    
     
     for prep_strategy in preprocessing_strategies:
         preprocessor = TextPreprocessor(prep_strategy)
@@ -187,16 +183,12 @@ def experiment_morphphon(f):
     
     feature_extractors = {
         'tfidf_100': TfidfVectorizer(max_features=100),
-        'word_50': CountVectorizer(max_features=50),
         'word_100': CountVectorizer(max_features=100),
-        'bigram_50': CountVectorizer(ngram_range=(1, 2), max_features=50),
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
-        'word_100_binary': CountVectorizer(max_features=100, binary=True),
-        'word_100_stop': CountVectorizer(max_features=100, stop_words='english'),
-        'word_100_min2': CountVectorizer(max_features=100, min_df=2),
-        'word_100_min3': CountVectorizer(max_features=100, min_df=3),
-        'char_3_5_200': CountVectorizer( analyzer='char', ngram_range=(3, 5), max_features=200 )
-    }
+        'char_3_5_count': CountVectorizer(analyzer='char', ngram_range=(3, 5), max_features=200),
+        'char_3_5_binary': CountVectorizer(analyzer='char', ngram_range=(3, 5), binary=True, max_features=200),
+    } 
+          
     classifiers = {
         'logistic_L2_C0.01': LogisticRegression(penalty='l2', C=0.01, max_iter=500, random_state=42),
         'logistic_L2_C0.1': LogisticRegression(penalty='l2', C=0.1, max_iter=500, random_state=42),
@@ -206,18 +198,16 @@ def experiment_morphphon(f):
         'logistic_L1_C0.10': LogisticRegression(penalty='l1', solver='liblinear', C=0.1, max_iter=500, random_state=42),
         'logistic_L1_C1.0': LogisticRegression(penalty='l1', solver='liblinear', C=1.0, max_iter=500, random_state=42),
         'logistic_L1_C10': LogisticRegression(penalty='l1', solver='liblinear', C=10.0, max_iter=500, random_state=42),
-        'perceptron_L2': Perceptron(penalty='l2', alpha=0.0001, max_iter=500, random_state=42),
-        'perceptron_L1': Perceptron(penalty='l1', alpha=0.0001, max_iter=500, random_state=42),
-        'perceptron_none': Perceptron(penalty=None, max_iter=500, random_state=42),
-        'perceptron_ES': Perceptron( penalty='l2', alpha=0.0001, max_iter=1000, early_stopping=True, validation_fraction=0.1, random_state=42 ),
-        'perceptron_eta0_0.01': Perceptron( eta0=0.01, max_iter=100, random_state=42 ),
-        'perceptron_eta0_0.1': Perceptron( eta0=0.1, max_iter=100, random_state=42 ),
-        'perceptron_eta0_1.0': Perceptron( eta0=1.0, max_iter=100, random_state=42 ),
-        'perceptron_iter_10': Perceptron( max_iter=10, random_state=42 ),
-        'perceptron_iter_50': Perceptron( max_iter=50, random_state=42 ),
-        'perceptron_iter_500': Perceptron( max_iter=500, random_state=42 ),
-        'perceptron_L2_alpha1e-5': Perceptron( penalty='l2', alpha=1e-5, max_iter=100, random_state=42 ),
-        'perceptron_L2_alpha1e-3': Perceptron( penalty='l2', alpha=1e-3, max_iter=100, random_state=42 ),
+        
+        'linearSVC_L2_C0.01': LinearSVC(penalty='l2', C=0.01, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C0.1': LinearSVC(penalty='l2', C=0.1, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C1.0': LinearSVC(penalty='l2', C=1.0, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C10': LinearSVC(penalty='l2', C=10.0, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L2_C100': LinearSVC(penalty='l2', C=100.0, max_iter=1000, random_state=42, dual=True),
+        'linearSVC_L1_C0.01': LinearSVC(penalty='l1', C=0.01, max_iter=1000, random_state=42, dual=False),
+        'linearSVC_L1_C0.1': LinearSVC(penalty='l1', C=0.1, max_iter=1000, random_state=42, dual=False),
+        'linearSVC_L1_C1.0': LinearSVC(penalty='l1', C=1.0, max_iter=1000, random_state=42, dual=False),
+        'linearSVC_L1_C10': LinearSVC(penalty='l1', C=10.0, max_iter=1000, random_state=42, dual=False),
     }
     
     results = []
@@ -313,53 +303,66 @@ if __name__ == "__main__":
         f.write(f"  Preprocessing: {best_acc['preprocessing']}\n")
         f.write(f"  Features: {best_acc['features']}\n")
         f.write(f"  Classifier: {best_acc['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_acc['train_acc']}\n")
-        f.write(f"  Test Accuracy: {best_acc['test_acc']}\n")
+        f.write(f"  Train Accuracy: {best_acc['train_acc']:.4f}\n")
+        f.write(f"  Test Accuracy: {best_acc['test_acc']:.4f}\n")
         if best_acc['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_acc['test_logloss']}\n")
-        f.write(f"  CV Mean: {best_acc['cv_mean']} (+/- {best_acc['cv_std']})\n")
-        f.write(f"  Mean Entropy: {best_acc['mean_entropy']}\n\n")
+            f.write(f"  Test Log Loss: {best_acc['test_logloss']:.4f}\n")
+        f.write(f"  CV Mean: {best_acc['cv_mean']:.4f} (+/- {best_acc['cv_std']:.4f})\n")
+        if best_acc['mean_entropy'] is not None:
+            f.write(f"  Mean Entropy: {best_acc['mean_entropy']:.4f}\n\n")
+        else:
+            f.write("  Mean Entropy: N/A\n\n")
 
         f.write("\nBest test log loss for Sentiment Analysis:\n")
         f.write(f"  Preprocessing: {best_logloss['preprocessing']}\n")
         f.write(f"  Features: {best_logloss['features']}\n")
         f.write(f"  Classifier: {best_logloss['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_logloss['train_acc']}\n")
-        f.write(f"  Test Accuracy: {best_logloss['test_acc']}\n")
+        f.write(f"  Train Accuracy: {best_logloss['train_acc']:.4f}\n")
+        f.write(f"  Test Accuracy: {best_logloss['test_acc']:.4f}\n")
         if best_logloss['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_logloss['test_logloss']}\n")
-        f.write(f"  CV Mean: {best_logloss['cv_mean']} (+/- {best_logloss['cv_std']})\n")
-        f.write(f"  Mean Entropy: {best_logloss['mean_entropy']}\n\n")
+            f.write(f"  Test Log Loss: {best_logloss['test_logloss']:.4f}\n")
+        f.write(f"  CV Mean: {best_logloss['cv_mean']:.4f} (+/- {best_logloss['cv_std']:.4f})\n")
+        if best_logloss['mean_entropy'] is not None:
+            f.write(f"  Mean Entropy: {best_logloss['mean_entropy']:.4f}\n\n")
+        else:
+            f.write("  Mean Entropy: N/A\n\n")
         
-        f.write("Morphophonology Results\n")
-        f.write("=" * 50 + "\n\n")
+        f.write("\n" + "=" * 70 + "\n")
+        f.write("Alliteration Detection Results (3+ words with same starting letter)\n")
+        f.write("=" * 70 + "\n\n")
         results_morphphon, best_morphphon, best_logloss_morphphon = experiment_morphphon(f)
-        f.write("\nBest test accuracy for Morphophonology Analysis:\n")
+        f.write("\nBest test accuracy for Alliteration Detection:\n")
         f.write(f"  Preprocessing: {best_morphphon['preprocessing']}\n")
         f.write(f"  Features: {best_morphphon['features']}\n")
         f.write(f"  Classifier: {best_morphphon['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_morphphon['train_acc']}\n")
-        f.write(f"  Test Accuracy: {best_morphphon['test_acc']}\n")
+        f.write(f"  Train Accuracy: {best_morphphon['train_acc']:.4f}\n")
+        f.write(f"  Test Accuracy: {best_morphphon['test_acc']:.4f}\n")
         if best_morphphon['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_morphphon['test_logloss']  }\n")
-        f.write(f"  CV Mean: {best_morphphon['cv_mean']} (+/- {best_morphphon['cv_std']})\n")
-        f.write(f"  Mean Entropy: {best_morphphon['mean_entropy']}\n\n")
+            f.write(f"  Test Log Loss: {best_morphphon['test_logloss']:.4f}\n")
+        f.write(f"  CV Mean: {best_morphphon['cv_mean']:.4f} (+/- {best_morphphon['cv_std']:.4f})\n")
+        if best_morphphon['mean_entropy'] is not None:
+            f.write(f"  Mean Entropy: {best_morphphon['mean_entropy']:.4f}\n\n")
+        else:
+            f.write("  Mean Entropy: N/A\n\n")
         
-        f.write("\nBest test log loss for morpho Analysis:\n")
+        f.write("\nBest test log loss for Alliteration Detection:\n")
         f.write(f"  Preprocessing: {best_logloss_morphphon['preprocessing']}\n")
         f.write(f"  Features: {best_logloss_morphphon['features']}\n")
         f.write(f"  Classifier: {best_logloss_morphphon['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_logloss_morphphon['train_acc']}\n")
-        f.write(f"  Test Accuracy: {best_logloss_morphphon['test_acc']}\n")
+        f.write(f"  Train Accuracy: {best_logloss_morphphon['train_acc']:.4f}\n")
+        f.write(f"  Test Accuracy: {best_logloss_morphphon['test_acc']:.4f}\n")
         if best_logloss_morphphon['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_logloss_morphphon['test_logloss']}\n")
-        f.write(f"  CV Mean: {best_logloss_morphphon['cv_mean']} (+/- {best_logloss_morphphon['cv_std']})\n")
-        f.write(f"  Mean Entropy: {best_logloss_morphphon['mean_entropy']}\n\n")
+            f.write(f"  Test Log Loss: {best_logloss_morphphon['test_logloss']:.4f}\n")
+        f.write(f"  CV Mean: {best_logloss_morphphon['cv_mean']:.4f} (+/- {best_logloss_morphphon['cv_std']:.4f})\n")
+        if best_logloss_morphphon['mean_entropy'] is not None:
+            f.write(f"  Mean Entropy: {best_logloss_morphphon['mean_entropy']:.4f}\n\n")
+        else:
+            f.write("  Mean Entropy: N/A\n\n")
