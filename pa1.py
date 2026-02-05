@@ -36,6 +36,7 @@ class TextPreprocessor:
         
         return text
     
+#loading data from files and labels
 def load_data(file0, file1):
     with open(file0, 'r', encoding='utf-8') as f0:
         class0=[line.strip() for line in f0 if line.strip()]
@@ -53,39 +54,50 @@ def load_data(file0, file1):
 def experiment_sentiment(f):
     X, Y = load_data('synsem0.txt', 'synsem1.txt')
 
+    #spliting 80% for training and 20% for testing
     X_train, X_test, Y_train, Y_test = train_test_split(
         X,Y, test_size=0.2, random_state=42, stratify=Y
         )
 
+    #directories for preprocessing, feature extraction, and classifiers
     preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma', 'remove_stopwords']
     
     feature_extractors = {
-        'tfidf_100': TfidfVectorizer(max_features=100),
         'word_100': CountVectorizer(max_features=100),
+        'tfidf_100': TfidfVectorizer(max_features=100),
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
         'char_3_5_count': CountVectorizer(analyzer='char', ngram_range=(3, 5), max_features=200),
         'char_3_5_binary': CountVectorizer(analyzer='char', ngram_range=(3, 5), binary=True, max_features=200),
     } 
 
     classifiers = {
+        # Logistic Regression with L2 penalty
         'logistic_L2_C0.01': LogisticRegression(penalty='l2', C=0.01, max_iter=500, random_state=42),
         'logistic_L2_C0.1': LogisticRegression(penalty='l2', C=0.1, max_iter=500, random_state=42),
         'logistic_L2_C1.0': LogisticRegression(penalty='l2', C=1.0, max_iter=500, random_state=42),
-        'logistic_L2_C10': LogisticRegression( penalty='l2', C=10.0, max_iter=500, random_state=42 ),
+        'logistic_L2_C10': LogisticRegression(penalty='l2', C=10.0, max_iter=500, random_state=42),
+        
+        # Logistic Regression with L1 penalty
         'logistic_L1_C0.01': LogisticRegression(penalty='l1', solver='liblinear', C=0.01, max_iter=500, random_state=42),
         'logistic_L1_C0.10': LogisticRegression(penalty='l1', solver='liblinear', C=0.1, max_iter=500, random_state=42),
         'logistic_L1_C1.0': LogisticRegression(penalty='l1', solver='liblinear', C=1.0, max_iter=500, random_state=42),
         'logistic_L1_C10': LogisticRegression(penalty='l1', solver='liblinear', C=10.0, max_iter=500, random_state=42),
         
-        'linearSVC_L2_C0.01': LinearSVC(penalty='l2', C=0.01, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C0.1': LinearSVC(penalty='l2', C=0.1, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C1.0': LinearSVC(penalty='l2', C=1.0, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C10': LinearSVC(penalty='l2', C=10.0, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C100': LinearSVC(penalty='l2', C=100.0, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L1_C0.01': LinearSVC(penalty='l1', C=0.01, max_iter=1000, random_state=42, dual=False),
-        'linearSVC_L1_C0.1': LinearSVC(penalty='l1', C=0.1, max_iter=1000, random_state=42, dual=False),
-        'linearSVC_L1_C1.0': LinearSVC(penalty='l1', C=1.0, max_iter=1000, random_state=42, dual=False),
-        'linearSVC_L1_C10': LinearSVC(penalty='l1', C=10.0, max_iter=1000, random_state=42, dual=False),
+        # Logistic Regression without penalty
+        'logistic_none': LogisticRegression(penalty=None, max_iter=500, random_state=42),
+        
+        # LinearSVC with L2 penalty
+        'linearSVC_L2_C0.01': LinearSVC(penalty='l2', C=0.01, max_iter=500, random_state=42, dual=True),
+        'linearSVC_L2_C0.1': LinearSVC(penalty='l2', C=0.1, max_iter=500, random_state=42, dual=True),
+        'linearSVC_L2_C1.0': LinearSVC(penalty='l2', C=1.0, max_iter=500, random_state=42, dual=True),
+        'linearSVC_L2_C10': LinearSVC(penalty='l2', C=10.0, max_iter=500, random_state=42, dual=True),
+        
+        # LinearSVC with L1 penalty
+        'linearSVC_L1_C0.01': LinearSVC(penalty='l1', C=0.01, max_iter=500, random_state=42, dual=False),
+        'linearSVC_L1_C0.1': LinearSVC(penalty='l1', C=0.1, max_iter=500, random_state=42, dual=False),
+        'linearSVC_L1_C1.0': LinearSVC(penalty='l1', C=1.0, max_iter=500, random_state=42, dual=False),
+        'linearSVC_L1_C10': LinearSVC(penalty='l1', C=10.0, max_iter=500, random_state=42, dual=False),
+        #SVC doesn't support no penalty option
     }
     
     results = []
@@ -175,39 +187,50 @@ def experiment_morphphon(f):
     
     X, Y = load_data('morphphon0.txt', 'morphphon1.txt')
     
+    #spliting 80% for training and 20% for testing
     X_train, X_test, Y_train, Y_test = train_test_split(
-        X, Y, test_size=0.2, random_state=42, stratify=Y
-    )
-    
+        X,Y, test_size=0.2, random_state=42, stratify=Y
+        )
+
+    #directories for preprocessing, feature extraction, and classifiers
     preprocessing_strategies = ['tokenize', 'lowercase', 'stem', 'lemma', 'remove_stopwords']
     
     feature_extractors = {
-        'tfidf_100': TfidfVectorizer(max_features=100),
         'word_100': CountVectorizer(max_features=100),
+        'tfidf_100': TfidfVectorizer(max_features=100),
         'bigram_100': CountVectorizer(ngram_range=(1, 2), max_features=100),
         'char_3_5_count': CountVectorizer(analyzer='char', ngram_range=(3, 5), max_features=200),
         'char_3_5_binary': CountVectorizer(analyzer='char', ngram_range=(3, 5), binary=True, max_features=200),
     } 
-          
+
     classifiers = {
+        # Logistic Regression with L2 penalty
         'logistic_L2_C0.01': LogisticRegression(penalty='l2', C=0.01, max_iter=500, random_state=42),
         'logistic_L2_C0.1': LogisticRegression(penalty='l2', C=0.1, max_iter=500, random_state=42),
         'logistic_L2_C1.0': LogisticRegression(penalty='l2', C=1.0, max_iter=500, random_state=42),
-        'logistic_L2_C10': LogisticRegression( penalty='l2', C=10.0, max_iter=500, random_state=42 ),
+        'logistic_L2_C10': LogisticRegression(penalty='l2', C=10.0, max_iter=500, random_state=42),
+        
+        # Logistic Regression with L1 penalty
         'logistic_L1_C0.01': LogisticRegression(penalty='l1', solver='liblinear', C=0.01, max_iter=500, random_state=42),
         'logistic_L1_C0.10': LogisticRegression(penalty='l1', solver='liblinear', C=0.1, max_iter=500, random_state=42),
         'logistic_L1_C1.0': LogisticRegression(penalty='l1', solver='liblinear', C=1.0, max_iter=500, random_state=42),
         'logistic_L1_C10': LogisticRegression(penalty='l1', solver='liblinear', C=10.0, max_iter=500, random_state=42),
         
-        'linearSVC_L2_C0.01': LinearSVC(penalty='l2', C=0.01, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C0.1': LinearSVC(penalty='l2', C=0.1, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C1.0': LinearSVC(penalty='l2', C=1.0, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C10': LinearSVC(penalty='l2', C=10.0, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L2_C100': LinearSVC(penalty='l2', C=100.0, max_iter=1000, random_state=42, dual=True),
-        'linearSVC_L1_C0.01': LinearSVC(penalty='l1', C=0.01, max_iter=1000, random_state=42, dual=False),
-        'linearSVC_L1_C0.1': LinearSVC(penalty='l1', C=0.1, max_iter=1000, random_state=42, dual=False),
-        'linearSVC_L1_C1.0': LinearSVC(penalty='l1', C=1.0, max_iter=1000, random_state=42, dual=False),
-        'linearSVC_L1_C10': LinearSVC(penalty='l1', C=10.0, max_iter=1000, random_state=42, dual=False),
+        # Logistic Regression without penalty
+        'logistic_none': LogisticRegression(penalty=None, max_iter=500, random_state=42),
+        
+        # LinearSVC with L2 penalty
+        'linearSVC_L2_C0.01': LinearSVC(penalty='l2', C=0.01, max_iter=500, random_state=42, dual=True),
+        'linearSVC_L2_C0.1': LinearSVC(penalty='l2', C=0.1, max_iter=500, random_state=42, dual=True),
+        'linearSVC_L2_C1.0': LinearSVC(penalty='l2', C=1.0, max_iter=500, random_state=42, dual=True),
+        'linearSVC_L2_C10': LinearSVC(penalty='l2', C=10.0, max_iter=500, random_state=42, dual=True),
+        
+        # LinearSVC with L1 penalty
+        'linearSVC_L1_C0.01': LinearSVC(penalty='l1', C=0.01, max_iter=500, random_state=42, dual=False),
+        'linearSVC_L1_C0.1': LinearSVC(penalty='l1', C=0.1, max_iter=500, random_state=42, dual=False),
+        'linearSVC_L1_C1.0': LinearSVC(penalty='l1', C=1.0, max_iter=500, random_state=42, dual=False),
+        'linearSVC_L1_C10': LinearSVC(penalty='l1', C=10.0, max_iter=500, random_state=42, dual=False),
+        #SVC doesn't support no penalty option
     }
     
     results = []
@@ -297,21 +320,21 @@ def experiment_morphphon(f):
 if __name__ == "__main__":
     with open('results.txt', 'w', encoding='utf-8') as f:
         f.write("Sentiment Analysis Results\n")
-        f.write("=" * 50 + "\n\n")
+        
         results, best_acc, best_logloss = experiment_sentiment(f)
         f.write("\nBest test accuracy for Sentiment Analysis:\n")
         f.write(f"  Preprocessing: {best_acc['preprocessing']}\n")
         f.write(f"  Features: {best_acc['features']}\n")
         f.write(f"  Classifier: {best_acc['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_acc['train_acc']:.4f}\n")
-        f.write(f"  Test Accuracy: {best_acc['test_acc']:.4f}\n")
+        f.write(f"  Train Accuracy: {best_acc['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_acc['test_acc']}\n")
         if best_acc['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_acc['test_logloss']:.4f}\n")
-        f.write(f"  CV Mean: {best_acc['cv_mean']:.4f} (+/- {best_acc['cv_std']:.4f})\n")
+            f.write(f"  Test Log Loss: {best_acc['test_logloss']}\n")
+        f.write(f"  CV Mean: {best_acc['cv_mean']} (+/- {best_acc['cv_std']})\n")
         if best_acc['mean_entropy'] is not None:
-            f.write(f"  Mean Entropy: {best_acc['mean_entropy']:.4f}\n\n")
+            f.write(f"  Mean Entropy: {best_acc['mean_entropy']}\n\n")
         else:
             f.write("  Mean Entropy: N/A\n\n")
 
@@ -319,35 +342,34 @@ if __name__ == "__main__":
         f.write(f"  Preprocessing: {best_logloss['preprocessing']}\n")
         f.write(f"  Features: {best_logloss['features']}\n")
         f.write(f"  Classifier: {best_logloss['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_logloss['train_acc']:.4f}\n")
-        f.write(f"  Test Accuracy: {best_logloss['test_acc']:.4f}\n")
+        f.write(f"  Train Accuracy: {best_logloss['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_logloss['test_acc']}\n")
         if best_logloss['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_logloss['test_logloss']:.4f}\n")
-        f.write(f"  CV Mean: {best_logloss['cv_mean']:.4f} (+/- {best_logloss['cv_std']:.4f})\n")
+            f.write(f"  Test Log Loss: {best_logloss['test_logloss']}\n")
+        f.write(f"  CV Mean: {best_logloss['cv_mean']} (+/- {best_logloss['cv_std']})\n")
         if best_logloss['mean_entropy'] is not None:
-            f.write(f"  Mean Entropy: {best_logloss['mean_entropy']:.4f}\n\n")
+            f.write(f"  Mean Entropy: {best_logloss['mean_entropy']}\n\n")
         else:
             f.write("  Mean Entropy: N/A\n\n")
         
-        f.write("\n" + "=" * 70 + "\n")
+
         f.write("Alliteration Detection Results (3+ words with same starting letter)\n")
-        f.write("=" * 70 + "\n\n")
         results_morphphon, best_morphphon, best_logloss_morphphon = experiment_morphphon(f)
         f.write("\nBest test accuracy for Alliteration Detection:\n")
         f.write(f"  Preprocessing: {best_morphphon['preprocessing']}\n")
         f.write(f"  Features: {best_morphphon['features']}\n")
         f.write(f"  Classifier: {best_morphphon['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_morphphon['train_acc']:.4f}\n")
-        f.write(f"  Test Accuracy: {best_morphphon['test_acc']:.4f}\n")
+        f.write(f"  Train Accuracy: {best_morphphon['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_morphphon['test_acc']}\n")
         if best_morphphon['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_morphphon['test_logloss']:.4f}\n")
-        f.write(f"  CV Mean: {best_morphphon['cv_mean']:.4f} (+/- {best_morphphon['cv_std']:.4f})\n")
+            f.write(f"  Test Log Loss: {best_morphphon['test_logloss']}\n")
+        f.write(f"  CV Mean: {best_morphphon['cv_mean']} (+/- {best_morphphon['cv_std']})\n")
         if best_morphphon['mean_entropy'] is not None:
-            f.write(f"  Mean Entropy: {best_morphphon['mean_entropy']:.4f}\n\n")
+            f.write(f"  Mean Entropy: {best_morphphon['mean_entropy']}\n\n")
         else:
             f.write("  Mean Entropy: N/A\n\n")
         
@@ -355,14 +377,14 @@ if __name__ == "__main__":
         f.write(f"  Preprocessing: {best_logloss_morphphon['preprocessing']}\n")
         f.write(f"  Features: {best_logloss_morphphon['features']}\n")
         f.write(f"  Classifier: {best_logloss_morphphon['classifier']}\n")
-        f.write(f"  Train Accuracy: {best_logloss_morphphon['train_acc']:.4f}\n")
-        f.write(f"  Test Accuracy: {best_logloss_morphphon['test_acc']:.4f}\n")
+        f.write(f"  Train Accuracy: {best_logloss_morphphon['train_acc']}\n")
+        f.write(f"  Test Accuracy: {best_logloss_morphphon['test_acc']}\n")
         if best_logloss_morphphon['test_logloss'] is None:
             f.write("  Test Log Loss: N/A\n")
         else:
-            f.write(f"  Test Log Loss: {best_logloss_morphphon['test_logloss']:.4f}\n")
-        f.write(f"  CV Mean: {best_logloss_morphphon['cv_mean']:.4f} (+/- {best_logloss_morphphon['cv_std']:.4f})\n")
+            f.write(f"  Test Log Loss: {best_logloss_morphphon['test_logloss']}\n")
+        f.write(f"  CV Mean: {best_logloss_morphphon['cv_mean']} (+/- {best_logloss_morphphon['cv_std']})\n")
         if best_logloss_morphphon['mean_entropy'] is not None:
-            f.write(f"  Mean Entropy: {best_logloss_morphphon['mean_entropy']:.4f}\n\n")
+            f.write(f"  Mean Entropy: {best_logloss_morphphon['mean_entropy']}\n\n")
         else:
             f.write("  Mean Entropy: N/A\n\n")

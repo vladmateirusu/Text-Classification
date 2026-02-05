@@ -1,15 +1,13 @@
 Sentiment Analysis Results
-==================================================
-
 
 Best test accuracy for Sentiment Analysis:
   Preprocessing: tokenize
   Features: char_3_5_binary
   Classifier: linearSVC_L1_C0.1
-  Train Accuracy: 0.7193
-  Test Accuracy: 0.6897
+  Train Accuracy: 0.7192982456140351
+  Test Accuracy: 0.6896551724137931
   Test Log Loss: N/A
-  CV Mean: 0.4739 (+/- 0.0348)
+  CV Mean: 0.4739130434782609 (+/- 0.034782608695652174)
   Mean Entropy: N/A
 
 
@@ -17,36 +15,32 @@ Best test log loss for Sentiment Analysis:
   Preprocessing: lemma
   Features: char_3_5_binary
   Classifier: logistic_L1_C1.0
-  Train Accuracy: 0.8772
-  Test Accuracy: 0.5862
-  Test Log Loss: 0.6572
-  CV Mean: 0.4652 (+/- 0.0668)
-  Mean Entropy: 0.5742
+  Train Accuracy: 0.8771929824561403
+  Test Accuracy: 0.5862068965517241
+  Test Log Loss: 0.6572319007670374
+  CV Mean: 0.46521739130434786 (+/- 0.06679257172059656)
+  Mean Entropy: 0.5741966798640812
 
-
-======================================================================
 Alliteration Detection Results (3+ words with same starting letter)
-======================================================================
-
 
 Best test accuracy for Alliteration Detection:
   Preprocessing: tokenize
   Features: tfidf_100
   Classifier: logistic_L2_C10
-  Train Accuracy: 1.0000
-  Test Accuracy: 1.0000
-  Test Log Loss: 0.1715
-  CV Mean: 0.9727 (+/- 0.0364)
-  Mean Entropy: 0.3602
+  Train Accuracy: 1.0
+  Test Accuracy: 1.0
+  Test Log Loss: 0.17146547225330455
+  CV Mean: 0.9727272727272727 (+/- 0.03636363636363637)
+  Mean Entropy: 0.3602189927436702
 
 
 Best test log loss for Alliteration Detection:
-  Preprocessing: lemma
+  Preprocessing: tokenize
   Features: tfidf_100
-  Classifier: logistic_L1_C10
-  Train Accuracy: 1.0000
-  Test Accuracy: 0.9655
-  Test Log Loss: 0.1714
-  CV Mean: 0.9281 (+/- 0.0549)
-  Mean Entropy: 0.1501
+  Classifier: logistic_none
+  Train Accuracy: 1.0
+  Test Accuracy: 0.9655172413793104
+  Test Log Loss: 0.06123760556752699
+  CV Mean: 0.9727272727272727 (+/- 0.03636363636363637)
+  Mean Entropy: 0.07948724754580105
 
